@@ -2,9 +2,14 @@ const { where } = require('sequelize');
 const { Reader } = require('../models');
 
 exports.create = async (req, res) => {
+  try {
   const newReader = await Reader.create(req.body);
-  res.status(201).json(newReader);
-};
+  res.status(201).json(newReader)
+  } catch (error) {
+  const errorMessages = error.errors.map((e) => e.message);
+  res.status(404).json({ errors: errorMessages });
+}
+  };
 
 exports.read = async (req, res) => {
       const result = await Reader.findAll();
