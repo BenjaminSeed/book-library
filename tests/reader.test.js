@@ -24,10 +24,13 @@ describe('/readers', () => {
           raw: true,
         });
  
-        console.log(newReaderRecord, '<--newReaderRecord')
+        // console.log(newReaderRecord, '<--newReaderRecord')
 
         expect(response.status).to.equal(201);
         expect(response.body.name).to.equal('Elizabeth Bennet');
+        expect(response.body.email).to.equal('future_ms_darcy@gmail.com');
+        expect(response.body.password).to.equal(undefined);
+
         expect(newReaderRecord.name).to.equal('Elizabeth Bennet');
         expect(newReaderRecord.email).to.equal('future_ms_darcy@gmail.com');
         expect(newReaderRecord.password).to.equal('password123');
@@ -44,8 +47,33 @@ describe('/readers', () => {
           password: 'password123',
         });
 
-        expect(response.status).to.equal(404);
-        expect(response.body.errors.toString()).to.equal('The email is in incorrect format.')
+        const newReaderRecord = await Reader.findByPk(response.body.id, {
+          raw: true,
+        });
+
+        expect(response.status).to.equal(400);
+        expect(response.body.errors.toString()).to.equal('The email is in incorrect format.');
+        expect(newReaderRecord).to.equal(null);
+      });
+    });
+
+    describe('check if name is available', () => {
+      it('checks the name field is valid', async () => {
+        const response = await request(app)
+        .post('/readers')
+        .send({
+          name: '   ',
+          email: 'future_ms_darcy@gmail.com',
+          password: 'password123',
+        });
+
+        const newReaderRecord = await Reader.findByPk(response.body.id, {
+          raw: true,
+        });
+
+        expect(response.status).to.equal(400);
+        expect(response.body.errors.toString()).to.equal('The name is missing.');
+        expect(newReaderRecord).to.equal(null);
       });
     });
 
@@ -59,10 +87,15 @@ describe('/readers', () => {
           password: '123',
         });
 
-        console.log(response.status, '<----------response.status');
+        const newReaderRecord = await Reader.findByPk(response.body.id, {
+          raw: true,
+        });
 
-        expect(response.status).to.equal(404);
+        // console.log(response.status, '<-----response.status');
+
+        expect(response.status).to.equal(400);
         expect(response.body.errors.toString()).to.equal('The password length should be between 8 and 40 characters.')
+        expect(newReaderRecord).to.equal(null);
       });
     });
 
@@ -95,7 +128,7 @@ describe('/readers', () => {
 
           expect(reader.name).to.equal(expected.name);
           expect(reader.email).to.equal(expected.email);
-          expect(reader.password).to.equal(expected.password);
+          expect(reader.password).to.equal(undefined);
         });
       });
     });
@@ -108,7 +141,7 @@ describe('/readers', () => {
         expect(response.status).to.equal(200);
         expect(response.body.name).to.equal(reader.name);
         expect(response.body.email).to.equal(reader.email);
-        expect(response.body.password).to.equal(reader.password);
+        expect(response.body.password).to.equal(undefined);
       });
 
       it('returns a 404 if the reader does not exist', async () => {
@@ -131,6 +164,7 @@ describe('/readers', () => {
 
         expect(response.status).to.equal(200);
         expect(updatedReaderRecord.email).to.equal('miss_e_bennet@gmail.com');
+        expect(response.body.password).to.equal(undefined);
       });
 
       it('returns a 404 if the reader does not exist', async () => {

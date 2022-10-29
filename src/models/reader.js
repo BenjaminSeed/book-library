@@ -12,7 +12,13 @@ module.exports = (connection, DataTypes) => {
     },
     name: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      validate: {
+        notEmpty: {
+        args: true,
+        msg: 'The name is missing.'
+        }
+      }
     },
     password: {
       type: DataTypes.STRING,
